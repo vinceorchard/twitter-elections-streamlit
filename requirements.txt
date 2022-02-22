@@ -1,0 +1,11 @@
+streamlit
+pandas
+schedule
+ujson
+twarc
+spacy
+tqdm
+
+
+pip >= 21.3.1
+#We also need to download the spacy trained pipelines fr_core_news_lg using command: python -m spacy download fr_core_news_lg
