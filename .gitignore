@@ -2,3 +2,7 @@ code/01_update_tweets_dataset.py
 code/00_writting_first_master_csv.py
 token.txt
 scratch/*
+data/temp/*
+data/master_candidates_tweets_cleaned.csv
+data/master_candidates_tweets.csv
+venv/*
