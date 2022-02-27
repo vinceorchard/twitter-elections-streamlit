@@ -4,3 +4,7 @@ token.txt
 scratch/*
 data/master_candidates_tweets.csv
 data/historique/20220209_2002_master_tweets_dataset.json
+data/temp/*
+data/master_candidates_tweets_cleaned.csv
+venv/*
+
