@@ -5,6 +5,11 @@ ujson
 twarc
 spacy
 tqdm
+notebook
+spacy
+spacymoji
+wordcloud
+scikit-learn
 
 
 pip >= 21.3.1
