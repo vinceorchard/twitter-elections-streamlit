@@ -10,6 +10,7 @@ spacy
 spacymoji
 wordcloud
 scikit-learn
+requests
 
 
 pip >= 21.3.1
