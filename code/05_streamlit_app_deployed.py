@@ -1,10 +1,20 @@
 ########################
 #Importing packages
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from tqdm import tqdm
 import requests
 from io import StringIO
+
+
+# Functions
+
+def theTweet(tweet_url):
+    api = "https://publish.twitter.com/oembed?url={}".format(tweet_url)
+    response = requests.get(api)
+    res = response.json()['html']
+    return res
 
 #Importing datasets
 #df_master = pd.read_csv('data/master_candidates_tweets.csv')
@@ -15,6 +25,12 @@ df_master = pd.read_csv(StringIO(df_master.text))
 
 df_candidates = pd.read_csv('data/candidates_account_list.csv', index_col=0).set_index('twitter_id')
 
+res = theTweet("https://twitter.com/PinchOfData")
+#st.write(res)
+components.html(res, height= 500, width = 700, scrolling = True)
+
+res = theTweet("https://twitter.com/kaitmsims/status/1499445671966957569")
+components.html(res, height= 500, width = 700, scrolling = True)
 
 #I) Data preparation
 #
@@ -31,10 +47,10 @@ df_nb_tweets_week = df_nb_tweets_week.rename(columns = {df_candidates.index[i] :
 
 ######################
 #Page title
-st.title('Que disent les candidats à la présidentielle sur Twitter ?')
+st.title('Que disent les candidats à l\'élection présidentielle sur Twitter ?')
 
 ##User chooses the candidates he wants to compare
-st.header('L\'activité de quels candidats souhaitez-vous analyser ?')
+st.header('Quels candidats souhaitez-vous analyser ?')
 df_candidates = df_candidates.set_index('name')
 liste_candidats = list(df_candidates.index)
 filtre_candidats = st.multiselect('Choisissez les candidats', liste_candidats)
@@ -45,7 +61,6 @@ filtre_candidats = st.multiselect('Choisissez les candidats', liste_candidats)
 st.subheader('Statistiques clés sur les comptes des candidats')
 st.table(df_candidates[['followers_count', 'tweet_count', 'created_at', 'description']].loc[filtre_candidats])
 #To do: Ajouter un disclaimer avec l'heure du last update de la base de données
-
 
 
 ######################
