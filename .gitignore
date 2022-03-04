@@ -1,9 +1,11 @@
-code/01_update_tweets_dataset.py
+code/01b_update_users_dataset.py
+code/01a_update_tweets_dataset.py
 code/00_writting_first_master_csv.py
 token.txt
 scratch/*
 data/master_candidates_tweets.csv
 data/historique/20220209_2002_master_tweets_dataset.json
+data/historique/master_candidates_tweets_backup.csv
 data/temp/*
 data/master_candidates_tweets_cleaned.csv
 venv/*

@@ -4,6 +4,9 @@
     <list default="true" id="e4ea77ea-e645-4146-9e16-6ccca37e98c8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/04_update_users_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/01b_update_users_dataset.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/code/05_streamlit_app_deployed.py" beforeDir="false" afterPath="$PROJECT_DIR$/code/05_streamlit_app_deployed.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/candidates_account_list.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/candidates_account_list.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +41,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/code" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
