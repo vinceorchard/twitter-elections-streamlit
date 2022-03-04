@@ -21,12 +21,10 @@ def theTweet(tweet_url):
 
 ####I) We load our data
 #Importing datasets
-df_master = pd.read_csv('data/master_candidates_tweets.csv', dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'float', 'followers_count':'float'}, index_col = 0)
+#df_master = pd.read_csv('data/master_candidates_tweets.csv', dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'float', 'followers_count':'float'}, index_col = 0)
 
-#df_master = requests.get(
- #           "https://www.dropbox.com/s/j1fhoyb3e74tt75/master_candidates_tweets.csv?dl=1" #A modifier à chaque mise à jour ?
-  #      )
-#df_master = pd.read_csv(StringIO(df_master.text), dtype={'id': 'str', 'author_id': 'str'}, index_col = 0)
+df_master = requests.get('https://www.dropbox.com/s/y6qwge76wuvyv0e/master_candidates_tweets.csv?dl=1')
+df_master = pd.read_csv(StringIO(df_master.text), dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'float', 'followers_count':'float'}, index_col = 0)
 
 
 df_candidates = pd.read_csv('data/candidates_account_list.csv', index_col=0).set_index('twitter_id')
@@ -34,8 +32,6 @@ df_candidates = pd.read_csv('data/candidates_account_list.csv', index_col=0).set
 df_nb_tweets_week = pd.read_csv('data/df_nb_tweets_week.csv', index_col=0)
 
 ####
-
-##
 
 ######################
 #Page title
@@ -91,7 +87,7 @@ df_temp = df_master[(df_master['name']==candidat) & (df_master['is_RT']==0)]
 #Consulter les 5 derniers tweets contenant le mot: XXXX
 'Filtrer les tweets contenant le(s) mot(s)'
 word = st.text_input("Entrez un ou des mots:", )
-'- Si vous ne souhaitez pas filtrez par mot laissez ce champs vide'
+'- Si vous ne souhaitez pas filtrer par mot laissez ce champ vide'
 '- Pour trouver les tweets contenant au moins mot, séparez les mots par le charactère \"|\"'
 '(e.g: Europe|économie retourne les tweets contenant les mots \"Europe\" ou \"économie\")'
 
