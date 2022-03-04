@@ -9,8 +9,10 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 import random 
+from wordcloud import WordCloud
 
 random.seed(1234)
+n_largest = 100
 
 df = pd.read_csv('../data/master_candidates_tweets_cleaned.csv')
 
@@ -59,22 +61,32 @@ coefs['token'] = coefs.index
 
 temp = coefs[coefs['token'].str.contains('@|#') == False]
 
-tab = {c:list(dict(temp[k].nlargest(50)).keys()) for k,c in enumerate(candidates)}
+tab = {c:list(dict(temp[k].nlargest(n_largest)).keys()) for k,c in enumerate(candidates)}
 tab = pd.DataFrame(tab)
-
-print('Most predictive words per party:')
-print(tab)
 
 tab.to_csv('../data/predictive_tokens.csv')
 
+distinctive_tokens = {c:list(dict(temp[k].nlargest(n_largest)).items()) for k,c in enumerate(candidates)}
+
+for candidate in candidates:
+    top_words = pd.DataFrame.from_records(distinctive_tokens[candidate], columns=['key', 'val'])
+    top_words = top_words.set_index('key')
+    top_words = top_words['val']
+    WordCloud(background_color="white", max_words=n_largest, width=800, height=400).generate_from_frequencies(top_words).to_file('../graphs/wordcloud_tokens_%s.png' %candidate)
+
 temp = coefs[coefs['token'].str.contains('#') == True]
-tab = {c:list(dict(temp[k].nlargest(50)).keys()) for k,c in enumerate(candidates)}
+tab = {c:list(dict(temp[k].nlargest(n_largest)).keys()) for k,c in enumerate(candidates)}
 tab = pd.DataFrame(tab)
 
-print('Most predictive hashtags per party:')
-print(tab)
-
 tab.to_csv('../data/predictive_hashtags.csv')
+
+distinctive_tokens = {c:list(dict(temp[k].nlargest(n_largest)).items()) for k,c in enumerate(candidates)}
+
+for candidate in candidates:
+    top_words = pd.DataFrame.from_records(distinctive_tokens[candidate], columns=['key', 'val'])
+    top_words = top_words.set_index('key')
+    top_words = top_words['val']
+    WordCloud(background_color="white", max_words=n_largest, width=800, height=400).generate_from_frequencies(top_words).to_file('../graphs/wordcloud_hashtags_%s.png' %candidate)
 
 # Save the model
 political_speech_model = [vectorizer1.vocabulary_,LR1]
