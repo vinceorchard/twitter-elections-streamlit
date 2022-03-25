@@ -6,6 +6,8 @@ import pandas as pd
 import re
 from tqdm import tqdm
 import requests
+import math
+from datetime import datetime
 
 
 from io import StringIO
@@ -24,11 +26,6 @@ st.set_page_config(layout="wide",
                    page_title="Que disent les candidats à la présidentielle sur Twitter ?",
                    page_icon="🗳️🇫🇷")
 
-#B) Defining margins
-col1, col2, col3 = st.columns([1, 5, 1])
-
-
-
 ##########################################
 # II) Define function to display tweets
 
@@ -42,159 +39,157 @@ def theTweet(tweet_url):
 # II) Define colors for candidats graph
 
 color_dict = {'Nathalie Arthaud' : "maroon",
- 'Francois Asselineau': "plum",
  'Nicolas Dupont-Aignan' : "mediumpurple",
- 'Anne Hidalgo' : "salmon",
+ 'Anne Hidalgo' : "pink",
  'Yannick Jadot' : "green",
- 'Anasse Kazib' : "black",
- 'Jean Lassalle' : "orange",
+ 'Jean Lassalle' : "yellow",
  'Marine Le Pen' : "darkblue",
- 'Emmanuel Macron' : "darkorange",
+ 'Emmanuel Macron' : "orange",
  'Jean-Luc Melenchon' : "red",
  'Valerie Pecresse' : "dodgerblue",
  'Fabien Roussel' : "crimson",
- 'Christiane Taubira' : "black",
- 'Hélène Thouy' : "black",
- 'Eric Zemmour' : "rebeccapurple"}
+ 'Eric Zemmour' : "rebeccapurple",
+              'Philippe Poutou': 'darkred'}
 
 ##########################################
 #III) Loading data
-df_master = requests.get('https://www.dropbox.com/s/y6qwge76wuvyv0e/master_candidates_tweets.csv?dl=1')
-df_master = pd.read_csv(StringIO(df_master.text), dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'float', 'followers_count':'float'}, index_col = 0)
+#df_master = pd.read_csv('data/master_candidates_tweets_platform.csv', dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'int', 'followers_count':'int'}, index_col = 0, lineterminator = '\n')
+df_master = requests.get("https://www.dropbox.com/s/y6qwge76wuvyv0e/master_candidates_tweets_platform.csv?dl=1")
+df_master = pd.read_csv(StringIO(df_master.text), dtype={'id': 'str', 'author_id': 'str', 'tweet_count' : 'int', 'followers_count':'int'}, index_col = 0, lineterminator = '\n')
 
 df_candidates = pd.read_csv('data/candidates_account_list.csv', index_col=0).set_index('twitter_id')
 df_nb_tweets_week = pd.read_csv('data/df_nb_tweets_week.csv', index_col=0)
 df_candidates = df_candidates.set_index('name')
 liste_candidats = list(df_candidates.index)
 
-
+date_last_tweet = datetime.strptime(max(df_master['created_at']), "%Y-%m-%dT%H:%M:%S.000Z")
 
 ##############################
 ####Part II: Page content#####
 ##############################
-
+col1, col2, col3 = st.columns([1, 5, 1])
 with col2:
-
 
     st.title('Que disent les candidats à l\'élection présidentielle sur Twitter ?')
 
-    #I)
+    st.header('Suivre l\'activité d\' un candidat sur Twitter')
 
-    st.header('Comparez l\'activités des candidats sur Twitter')
+    candidat = st.selectbox('Choisissez un candidat: ', liste_candidats) #User chooses the candidates he wants to compare
 
-    filtre_candidats = st.multiselect('Choisissez les candidats', liste_candidats) #User chooses the candidates he wants to compare
+col1, col2, col3, col4 = st.columns([2, 2, 3, 1])
+with col2:
+    ''
+    ''
+    ''
+    pd.DataFrame([eval("st.image(\'"+df_candidates['profile_image_url'].loc[candidat].replace('_normal', '') + "\' , width=200 , caption = \'"+candidat+"\')").embedding], columns = ['Photo de profil'])
 
-    ######################
-    #Statistcs on user account
-    #st.subheader('Statistiques clés sur les comptes des candidats')
-    #pd.options.display.float_format = '{:<,.0f}'.format
-    #st.table(df_candidates[['followers_count', 'tweet_count', 'created_at', 'description']].loc[filtre_candidats].style.format(
-     #   subset = ['followers_count', 'tweet_count'], formatter= '{:<,}'))
-    #To do: Ajouter un disclaimer avec l'heure du last update de la base de données
+with col3:
+    st.metric('nom d\'utilisateur', '@' + df_candidates['screen_name'].loc[candidat])
+    st.metric('Nombre de followers', '{:<,}'.format(df_candidates['followers_count'].loc[candidat]).replace(",", " "))
+    st.metric( 'Nombre de status', '{:<,}'.format(df_candidates['tweet_count'].loc[candidat]).replace(",", " "))
+    st.metric('Date de création du compte', datetime.strptime(df_candidates['created_at'].loc[candidat],'%Y-%m-%d').strftime('%d/%m/%Y'))
 
 
+    #pd.DataFrame([df_candidates['profile_image_url'].loc[candidat].replace('_normal', '')])
+
+    #st.image(df_candidates['profile_image_url'].loc[candidat].replace('_normal', ''), width=150, caption= candidat
+
+    candidat_screen_name = df_candidates['screen_name'].loc[candidat]
 
 
 ######################
 #Nombre de tweets
+col1, col2, col3 = st.columns([1, 5, 1])
+with col2:
     st.subheader('Nombre de tweets par semaine')
 
 col1, col2, col3 = st.columns([1, 1.8, 1])
+ymax = math.ceil(max(df_nb_tweets_week.stack())/10)*10
 
 with col2:
-
-
-    if filtre_candidats == []:
-        ' '
-        pass
-    else:
-        fig = df_nb_tweets_week[filtre_candidats].plot.line(color=color_dict).figure
-        plt.legend(loc='center right', bbox_to_anchor = (-0.1, 0.5))
-        st.pyplot(fig)
-
-        #df_nb_tweets_week[filtre_candidats].plot.line(color=color_dict)
+    fig = df_nb_tweets_week[candidat].iloc[0:-1].plot.line(color=color_dict, ylim = (0, ymax)).figure
+    plt.legend(loc='center right', bbox_to_anchor = (-0.1, 0.5))
+    st.pyplot(fig)
 
 col1, col2, col3 = st.columns([1, 5, 1])
-
 with col2:
-
-    ######################
-    # Display last tweets
-    st.header('Explorez les tweets postés par un candidat')
-
-    candidat = st.selectbox("Choisissez un candidat :", liste_candidats)
-
-    ######
-    st.subheader('Aperçu du fil Twitter de ' + candidat)
-    candidat_screen_name = df_candidates['screen_name'].loc[candidat]
-
-candidat_screen_name = "n_arthaud"
-candidat = 'Nathalie Arthaud'
-
-res = theTweet('https://twitter.com/' + candidat_screen_name)
+    st.subheader('Aperçu du fil d\'actualité de ' + candidat)
 
 col1, col2, col3 = st.columns([1, 1.8, 1])
-
 with col2:
-    components.html(res, height=600, width=550, scrolling=True)
+    res = theTweet('https://twitter.com/' + candidat_screen_name)
+    components.html(res, height=600, width=600, scrolling=True)
+
 
 col1, col2, col3 = st.columns([1, 5, 1])
-
 with col2:
-
-    ######
-    st.subheader('Filtrer les tweets de ' + candidat)
-    # filtre_mot =
+    st.subheader('Explorer les tweets de ' + candidat)
     df_temp = df_master[(df_master['name'] == candidat) & (df_master['is_RT'] == 0)]
 
     # Consulter les 5 derniers tweets contenant le mot: XXXX
     'Filtrer les tweets contenant le(s) mot(s)'
     word = st.text_input("Entrez un ou des mots:", )
     '- Si vous ne souhaitez pas filtrer par mot laissez ce champ vide'
-    '- Pour trouver les tweets contenant au moins mot, séparez les mots par le charactère \"|\"'
+    '- Pour trouver les tweets contenant au moins un mot parmi un ensemble de mots, séparez les mots par le charactère \"|\"'
     '(e.g: Europe|économie retourne les tweets contenant les mots \"Europe\" ou \"économie\")'
 
-    if " " in word:
+    if "" in word:
         base = r'^{}'
         expr = '(?=.*{})'
         words = word.split(" ")
-        df_temp = df_temp[df_temp['text'].str.contains(str(base.format(''.join(expr.format(w) for w in words))))]
+        df_temp2 = df_temp[df_temp['text'].str.contains(str(base.format(''.join(expr.format(w) for w in words))))]
     else:
-        df_temp = df_temp[df_temp['text'].str.contains(word)]
+        df_temp2 = df_temp[df_temp['text'].str.contains(word)]
 
     trie = st.selectbox('Trier les tweets par', ['date', 'popularité'])
 
-
     ####
     if trie == 'date':
-        '5 derniers tweets de ' + candidat + ' contenant le(s) mot(s): ' + word.replace(" ", " et ").replace("|", " ou ")
+        'Derniers tweets de ' + candidat + ' contenant le(s) mot(s): ' + word.replace(" ", " et ").replace("|",
+                                                                                                             " ou ")
+        'Le résultat de la recherche est limité à 20 tweets maximum.'
+        if word=="":
+            "Aucun filtre par mots n'a été renseigné. Par défault, sont affichés ci-dessous l'ensemble des tweets de " + candidat + " présents dans notre base de données triés par date."
     else:
-        '5 tweets les plus populaires de ' + candidat + ' contenant le(s) mot(s): ' + word.replace(" ", " et ").replace("|", " ou ")
+        'Tweets les plus populaires (en nombre de like) de ' + candidat + ' contenant le(s) mot(s): ' + word.replace(" ", " et ").replace(
+            "|", " ou ") + '. '
+        'Le résultat de la recherche est limité à 20 tweets maximum.'
+        if word == "":
+            "Aucun filtre par mots n'a été renseigné. Par défault, sont affichés ci-dessous l'ensemble des tweets de " + candidat + " présents dans notre base de données triés par popularité."
 
 col1, col2, col3 = st.columns([1, 1.8, 1])
-
 with col2:
-
     if trie == 'date':
-        df_temp2 = df_temp.sort_values(by='created_at', ascending=False).reset_index().drop(
-            columns='index')
-        set_of_tweets = list(df_temp2.iloc[0:5]['id'].values)
-
+        df_temp2 = df_temp2.sort_values(by='created_at', ascending=False).reset_index().drop(columns='index')
+        set_of_tweets = list(df_temp2['id'].iloc[0:20].values)
         if len(set_of_tweets) != 0:
-            res_test = ' '.join([theTweet("https://twitter.com/" + candidat_screen_name + "/status/" + id) for id in set_of_tweets])
-            components.html(res_test, height=600, width=550, scrolling=True)
+            list_url = ["https://twitter.com/" + candidat_screen_name + "/status/" + id for id in set_of_tweets]
+            res1 = ''
+            for url in list_url:
+                try:
+                    obj = theTweet(url)
+                    res1 = res1 + ' ' + obj
+                except:
+                    pass
+            components.html(res1, height=600, width=600, scrolling=True)
+
         else:
             "Aucun tweets correspondant"
 
     else:
-        df_temp2 = df_temp.sort_values(by='retweet_count', ascending=False).reset_index().drop(
-            columns='index')
-        # df_temp.iloc[0][0]
-        set_of_tweets = list(df_temp2.iloc[0:5]['id'].values)
-        if len(set_of_tweets) != 0:
-            res_test = ' '.join([theTweet("https://twitter.com/" + candidat_screen_name + "/status/" + id) for id in set_of_tweets])
+        df_temp2 = df_temp2.sort_values(by='like_count', ascending=False).reset_index().drop(columns='index')
+        set_of_tweets = list(df_temp2['id'].iloc[0:20].values)
 
-            components.html(res_test, height=600, width=550, scrolling=True)
+        if len(set_of_tweets) != 0:
+            list_url = ["https://twitter.com/" + candidat_screen_name + "/status/" + id for id in set_of_tweets]
+            res1 = ''
+            for url in list_url:
+                try:
+                    obj = theTweet(url)
+                    res1 = res1 + ' ' + obj
+                except:
+                    pass
+            components.html(res1, height=600, width=600, scrolling=True)
         else:
             "Aucun tweets correspondant"
 
@@ -202,63 +197,32 @@ with col2:
 col1, col2, col3 = st.columns([1, 5, 1])
 
 with col2:
+    'Notre base de données contient l\'ensemble des tweets des candidats depuis le 01/10/2021'
+    'Notre base de données a été mise à jour pour la dernière fois le ' + date_last_tweet.strftime("%x") + ' à ' + date_last_tweet.strftime("%H:%M")
+
+    '- Notre base de données recense ' + str(len(df_temp2)) + ' tweets de ' + candidat + ' contenant le(s) mot(s): ' + word.replace(" ", " et ").replace("|",
+                                                                                                             " ou ")
+    '- ' + str(len(df_temp2)/len(df_temp)*100)[0:3] + '% des tweets de ' + candidat + ' recensés dans notre base de données contiennent le(s) mot(s): '+ word.replace(" ", " et ").replace("|",
+                                                                                                             " ou ")
+    '- Dans les tweets recensés dans notre base de données, les candidats à la présidentielle mentionnent en moyenne dans ' + str(len(df_master[df_master['text'].str.contains(word)])/len(df_master)*100)[0:3] + \
+    '% de leurs tweets le(s) mot(s): '+ word.replace(" ", " et ").replace("|", " ou ")
+
     ###########################
     # Wordcloud
-    st.header('Comparer les mots et hashtags caractérisant chaque candidats')
+    st.subheader('Mots et hashtags charactéristiques de ' + candidat)
 
-    # df_master['name'].drop_duplicates()
-    liste_candidats_2 = list(df_candidates['nom'].values)
-    filtre_candidats2 = st.multiselect('Choisissez les candidats', liste_candidats_2)
+col1, col2, col3, col4 = st.columns([1, 5, 5, 1])
+screen_name = df_candidates['screen_name'].loc[candidat]
 
-    screen_name_name = {}
-    for name in filtre_candidats2:
-        screen_name_name[name] = df_candidates['screen_name'][df_candidates['nom'] == name].iloc[0]
+with col2:
+    st.image("graphs/wordcloud_tokens_" + screen_name + ".png", caption= "Mots les plus charactéristiques de "+ candidat)
 
+with col3:
+    st.image("graphs/wordcloud_hashtags_" + screen_name + ".png", caption="Hashtags les plus charactéristiques de "+ candidat)
 
+col1, col2, col3 = st.columns([1, 5, 1])
 
+with col2:
+    st.subheader('Topics model pour ' + candidat)
 
-    wordcloud_comp = st.selectbox('Comparer les:', ['mots', 'hashtags'])
-
-    if wordcloud_comp == "mots":
-        st.subheader('Mots charactérisant le plus chaque candidats')
-    else:
-        st.subheader('Hashtags charactérisant le plus chaque candidats')
-
-col1, col2, col3, col4 = st.columns([1, 2.7, 2.7, 1])
-
-i=2
-filtre_candidats_colonnegauche = [filtre_candidats2[i] for i in range(len(filtre_candidats2)) if i/2 == round(i/2)]
-filtre_candidats2_colonnedroite = [filtre_candidats2[i] for i in range(len(filtre_candidats2)) if i/2 != round(i/2)]
-
-if wordcloud_comp == "mots":
-    with col2:
-
-        pd.DataFrame([eval("st.image('graphs/wordcloud_tokens_" + screen_name_name[
-            candidat] + ".png\', caption=" + '\'' + candidat + '\'' + ")").embedding for
-                      candidat in filtre_candidats_colonnegauche])
-
-    with col3:
-        ##
-
-        pd.DataFrame([eval("st.image('graphs/wordcloud_tokens_" + screen_name_name[
-            candidat] + ".png\', caption=" + '\'' + candidat + '\'' + ")").embedding for
-                      candidat in filtre_candidats2_colonnedroite])
-
-else:
-    with col2:
-
-        pd.DataFrame([eval("st.image('graphs/wordcloud_hashtags_" + screen_name_name[
-            candidat] + ".png\', caption=" + '\'' + candidat + '\'' + ")").embedding for
-                      candidat in filtre_candidats_colonnegauche])
-
-    with col3:
-        ##
-
-        pd.DataFrame([eval("st.image('graphs/wordcloud_hashtags_" + screen_name_name[
-            candidat] + ".png\', caption=" + '\'' + candidat + '\'' + ")").embedding for
-                      candidat in filtre_candidats2_colonnedroite])
-
-
-
-
-
+    st.subheader('Narratives utilisées par ' + candidat)

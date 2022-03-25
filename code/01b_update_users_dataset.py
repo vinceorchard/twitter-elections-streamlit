@@ -8,7 +8,8 @@ from datetime import datetime
 #Getting name of most recent dataset
 date_files = []
 for line in subprocess.Popen(['ls', 'data/historique' ], stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout:
-    date_files.append(str(line)[2:15])
+    if 'json' in str(line):
+        date_files.append(str(line)[2:15])
 
 date_files_datetimeformat = [] #
 for i in range(len(date_files)-1):

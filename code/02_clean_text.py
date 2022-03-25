@@ -183,7 +183,7 @@ p = text_processor(
 
 print('Cleaning tweets...')
 
-df = pd.read_csv('../data/master_candidates_tweets.csv')
+df = pd.read_csv('../data/master_candidates_tweets_platform.csv')
 
 df['tweet_id'] = df.index
 list_of_dicts = df.to_dict('records')
